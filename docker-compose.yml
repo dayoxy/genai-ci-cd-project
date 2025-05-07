@@ -1,0 +1,41 @@
+version: '3.8'  # Version of Docker Compose
+
+services:
+  # Application service (your GenAI app)
+  app:
+    build:
+      context: .  # Path to your Dockerfile (usually the current directory)
+      dockerfile: Dockerfile  # Name of the Dockerfile
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+    ports:
+      - "8000:8000"  # Expose port 8000 for the app
+    environment:
+      - FLASK_ENV=development  # Set environment variable for development
+    depends_on:
+      - redis  # Ensure Redis service starts before the app
+      - db     # Ensure the database starts before the app
+
+  # Redis service (used for caching or message brokering)
+  redis:
+    image: "redis:latest"
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"  # Expose port 6379 for Redis
+
+  # PostgreSQL database service
+  db:
+    image: "postgres:latest"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: genai_db
+    ports:
+      - "5432:5432"  # Expose port 5432 for PostgreSQL
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  redis-data:  # Define a named volume for Redis data
+  postgres-data:  # Define a named volume for PostgreSQL data
